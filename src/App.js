@@ -1,23 +1,38 @@
-import logo from './logo.svg';
-import './App.css';
+import { Route, Routes } from "react-router-dom";
+import "./App.css";
+import About from "./pages/About/About";
+import Appointment from "./pages/Appointment/Appointment";
+import Signup from "./pages/Authentication/Signup";
+import Login from "./pages/Authentication/Login";
+import Contact from "./pages/Contact/Contact";
+import Home from "./pages/Home/Home";
+import Reviews from "./pages/Reviews/Reviews";
+import Header from "./pages/Shared/Header/Header";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import RequireAuth from "./pages/Shared/RequireAuth";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="max-w-7xl mx-auto">
+      <Header />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route
+          path="/appointment"
+          element={
+            <RequireAuth>
+              <Appointment />
+            </RequireAuth>
+          }
+        />
+        <Route path="/about" element={<About />} />
+        <Route path="/reviews" element={<Reviews />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+      </Routes>
+      <ToastContainer />
     </div>
   );
 }
