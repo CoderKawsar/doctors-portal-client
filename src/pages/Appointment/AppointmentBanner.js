@@ -6,7 +6,7 @@ import "react-calendar/dist/Calendar.css";
 const AppointmentBanner = ({ date, onChange }) => {
   return (
     <div className="hero min-h-screen">
-      <div className="hero-content flex-col lg:flex-row-reverse ">
+      <div className="hero-content flex-col lg:flex-row-reverse lg:justify-between">
         <img
           src={bannerImg}
           className="max-w-sm rounded-lg shadow-2xl"

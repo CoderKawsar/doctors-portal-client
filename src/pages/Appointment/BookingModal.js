@@ -1,16 +1,45 @@
 import React from "react";
+import { useAuthState } from "react-firebase-hooks/auth";
+import auth from "../../firebase.init";
 import { format } from "date-fns";
+import { toast } from "react-toastify";
 
-const BookingModal = ({ treatment, date, setTreatment }) => {
-  const { name, slots } = treatment;
+const BookingModal = ({ treatment, date, setTreatment, refetch }) => {
+  const { _id, name, slots } = treatment;
+  const [user, loading, error] = useAuthState(auth);
+  const formattedDate = format(date, "PP");
   const handleBooking = (event) => {
     event.preventDefault();
-    const date = event.target.date.value;
     const slot = event.target.slot.value;
-    const name = event.target.name.value;
-    const phone = event.target.phone.value;
-    const email = event.target.email.value;
-    setTreatment(null);
+    const booking = {
+      treatmentId: _id,
+      treatment: name,
+      date: formattedDate,
+      slot,
+      patientName: user.displayName,
+      patient: user.email,
+      phone: event.target.phone.value,
+    };
+
+    fetch("http://localhost:5000/booking", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(booking),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        refetch();
+        setTreatment(null);
+        if (data.success) {
+          toast.success(`${name} booked at ${formattedDate}, time: ${slot}`);
+        } else {
+          toast.error(
+            `Already have an appointment at ${formattedDate}, time: ${slot}`
+          );
+        }
+      });
   };
   return (
     <div>
@@ -18,7 +47,7 @@ const BookingModal = ({ treatment, date, setTreatment }) => {
       <div className="modal modal-bottom sm:modal-middle">
         <div className="modal-box">
           <label
-            for="booking-modal"
+            htmlFor="booking-modal"
             className="btn btn-sm btn-circle absolute right-2 top-2"
           >
             ✕
@@ -29,8 +58,7 @@ const BookingModal = ({ treatment, date, setTreatment }) => {
               type="text"
               name="date"
               className="input input-bordered w-full max-w-xs"
-              defaultValue={format(date, "PP")}
-              disabled
+              defaultValue={formattedDate}
               readOnly
             />
             <br />
@@ -51,6 +79,8 @@ const BookingModal = ({ treatment, date, setTreatment }) => {
               name="name"
               placeholder="Full Name"
               className="input input-bordered w-full max-w-xs mt-2"
+              defaultValue={user?.displayName}
+              readOnly
             />
             <br />
             <input
@@ -65,6 +95,9 @@ const BookingModal = ({ treatment, date, setTreatment }) => {
               name="email"
               placeholder="Email"
               className="input input-bordered w-full max-w-xs mt-2"
+              defaultValue={user?.email}
+              disabled
+              readOnly
             />
             <input
               type="submit"
