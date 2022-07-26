@@ -1,25 +1,25 @@
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Navigate, useLocation } from "react-router-dom";
 import auth from "../../firebase.init";
+import { signOut } from "firebase/auth";
+import useIsAdmin from "../../hooks/useIsAdmin";
 import LoadingSpinner from "./LoadingSpinner";
 
-function RequireAuth({ children }) {
+function RequireAdmin({ children }) {
   const [user, loading] = useAuthState(auth);
+  const [admin, adminLoading] = useIsAdmin(user);
   let location = useLocation();
 
-  if (loading) {
+  if (loading || adminLoading) {
     return <LoadingSpinner></LoadingSpinner>;
   }
 
-  if (!user) {
-    // Redirect them to the /login page, but save the current location they were
-    // trying to go to when they were redirected. This allows us to send them
-    // along to that page after they login, which is a nicer user experience
-    // than dropping them off on the home page.
+  if (!user || !admin) {
+    signOut(auth);
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return children;
 }
 
-export default RequireAuth;
+export default RequireAdmin;

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   useSignInWithEmailAndPassword,
   useSignInWithGoogle,
@@ -10,6 +10,7 @@ import auth from "../../firebase.init";
 import { useForm } from "react-hook-form";
 import LoadingSpinner from "../Shared/LoadingSpinner";
 import { Link } from "react-router-dom";
+import useToken from "../../hooks/useToken";
 
 const Login = () => {
   let navigate = useNavigate();
@@ -34,14 +35,23 @@ const Login = () => {
     handleSubmit,
   } = useForm();
 
+  const [token] = useToken(emailLoginUser || googleLoginUser);
+  let from = location.state?.from?.pathname || "/";
+
+  useEffect(() => {
+    if (token) {
+      localStorage.setItem("accessToken", token);
+      navigate(from, { replace: true });
+    }
+  }, [token, from, navigate]);
+
   if (emailLoginLoading || googleLoginLoading) {
     return <LoadingSpinner />;
   }
 
-  let from = location.state?.from?.pathname || "/";
-  if (emailLoginUser || googleLoginUser) {
-    navigate(from, { replace: true });
-  }
+  // if (emailLoginUser || googleLoginUser) {
+  //   navigate(from, { replace: true });
+  // }
 
   let errorP;
   if (emailLoginError || googleLoginError) {

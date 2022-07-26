@@ -2,18 +2,25 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   useCreateUserWithEmailAndPassword,
+  useSignInWithGoogle,
   useUpdateProfile,
 } from "react-firebase-hooks/auth";
 import auth from "../../firebase.init";
 import { toast } from "react-toastify";
 import GoogleSignIn from "./GoogleSignIn";
 import LoadingSpinner from "../Shared/LoadingSpinner";
-import { Link } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
+import useToken from "../../hooks/useToken";
 
 const Signup = () => {
   const [createUserWithEmailAndPassword, user, loading, createError] =
     useCreateUserWithEmailAndPassword(auth, { sendEmailVerification: true });
+  const [signInWithGoogle, gUser, gLoading, gError] = useSignInWithGoogle(auth);
   const [updateProfile, updating, updateError] = useUpdateProfile(auth);
+  const navigate = useNavigate();
+
+  const [token] = useToken(user || gUser);
+
   const {
     register,
     formState: { errors },
@@ -24,6 +31,10 @@ const Signup = () => {
     return <LoadingSpinner />;
   }
 
+  if (token) {
+    navigate("/appointment");
+  }
+
   let errorP;
   if (createError || updateError) {
     errorP = <>{createError?.message || updateError?.message}</>;
@@ -31,10 +42,8 @@ const Signup = () => {
   const onSubmit = async (data) => {
     await createUserWithEmailAndPassword(data.email, data.password);
     await updateProfile({ displayName: data.name });
-    console.log(user);
     toast("User created");
   };
-  console.log(user?.displayName);
   return (
     <div>
       <h1 className="text-center text-3xl font-semibold my-8">Sign Up</h1>
@@ -143,7 +152,7 @@ const Signup = () => {
         </Link>{" "}
         here
       </p>
-      <GoogleSignIn />
+      <GoogleSignIn signInWithGoogle={signInWithGoogle} />
     </div>
   );
 };

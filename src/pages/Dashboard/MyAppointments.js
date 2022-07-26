@@ -1,27 +1,43 @@
 import { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { useNavigate } from "react-router-dom";
+import { signOut } from "firebase/auth";
 import auth from "../../firebase.init";
 import LoadingSpinner from "../Shared/LoadingSpinner";
+import { toast } from "react-toastify";
 
 export default function MyAppointments() {
   const [user, loading, error] = useAuthState(auth);
   const [appointments, setAppointments] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (loading) {
       return <LoadingSpinner />;
     } else {
-      fetch(`http://localhost:5000/booking?patient=${user?.email}`)
-        .then((res) => res.json())
+      fetch(`http://localhost:5000/booking?patient=${user?.email}`, {
+        method: "GET",
+        headers: {
+          authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      })
+        .then((res) => {
+          if (res.status === 401 || res.status === 403) {
+            signOut(auth);
+            localStorage.removeItem("accessToken");
+            toast.warning("Please, Login again");
+            navigate("/");
+          } else return res.json();
+        })
         .then((data) => setAppointments(data));
     }
-  }, [user, loading]);
+  }, [user, loading, navigate]);
 
   return (
     <div>
-      <h2>My Appointments:</h2>
-      <div class="overflow-x-auto">
-        <table class="table table-zebra w-full">
+      <h2 className="text-2xl font-semibold mb-4">My Appointments:</h2>
+      <div className="overflow-x-auto">
+        <table className="table table-zebra w-full">
           {/* <!-- head --> */}
           <thead>
             <tr>
@@ -34,7 +50,7 @@ export default function MyAppointments() {
           </thead>
           <tbody>
             {/* <!-- row 1 --> */}
-            {appointments.map((appointment, index) => (
+            {appointments?.map((appointment, index) => (
               <tr key={appointment?._id}>
                 <th>{index + 1}</th>
                 <td>{appointment?.patientName}</td>

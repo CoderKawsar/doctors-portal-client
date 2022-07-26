@@ -14,6 +14,9 @@ import RequireAuth from "./pages/Shared/RequireAuth";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import MyAppointments from "./pages/Dashboard/MyAppointments";
 import MyReviews from "./pages/Dashboard/MyReviews";
+import Users from "./pages/Dashboard/Users";
+import MyHistory from "./pages/Dashboard/MyHistory";
+import RequireAdmin from "./pages/Shared/RequireAdmin";
 
 function App() {
   return (
@@ -39,6 +42,15 @@ function App() {
         >
           <Route index element={<MyAppointments />}></Route>
           <Route path="reviews" element={<MyReviews />}></Route>
+          <Route path="history" element={<MyHistory />}></Route>
+          <Route
+            path="users"
+            element={
+              <RequireAdmin>
+                <Users />
+              </RequireAdmin>
+            }
+          ></Route>
         </Route>
         <Route path="/about" element={<About />} />
         <Route path="/reviews" element={<Reviews />} />
